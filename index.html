@@ -1,0 +1,347 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Geometria cw3</title>
+    <script src="jquery-2.1.3.min.js"></script>
+    <script src="three.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: helvetica;
+            background-color: green;
+        }
+        #scena {            
+            background: white;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            left: 0;
+        }
+        #menu {
+            width: 20%;
+            height: 100%;
+            background: #2C3C50;
+            position: fixed;
+            right: 0;
+            color: white;
+        }
+        ul {
+            list-style-type: none;
+            width: 89%;
+            margin-top: 0;
+        }
+        li{
+            padding: 10px;
+            border: 1px solid white;
+            text-align: center;
+            margin-left: -12%;
+        }
+        li:hover{
+            background-color:yellow;
+            color: #2C3C50;
+            transition-duration: 500ms;
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+        window.addEventListener("load", onLoad, false);        
+        function onLoad() {
+            var obj_tab = [];
+            obj_tab.push({
+                geometry: new THREE.SphereGeometry(100, 32, 32),
+                material: new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: THREE.ImageUtils.loadTexture('imgCw3/planetTextures/sun.jpg') }),
+                positionX: 0,
+                positionZ: 0,
+                rotation: 0.001,
+                orbitRotation: 0,
+                name: "Sun",
+            });
+            obj_tab.push({
+                geometry: new THREE.SphereGeometry(10, 32, 32),
+                material: new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: THREE.ImageUtils.loadTexture('imgCw3/planetTextures/merc.jpg') }),
+                positionX: 0,
+                positionZ: 150,
+                rotation: 0.004,
+                orbitRotation: 0.035,
+                name: "Mercury",
+            });
+            obj_tab.push({
+                geometry: new THREE.SphereGeometry(20, 32, 32),
+                material: new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: THREE.ImageUtils.loadTexture('imgCw3/planetTextures/venus.jpg') }),
+                positionX: 0,
+                positionZ: 200,
+                rotation: 0.004,
+                orbitRotation: 0.025,
+                name: "Venus",
+            });
+            obj_tab.push({
+                geometry: new THREE.SphereGeometry(30, 32, 32),
+                material: new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: THREE.ImageUtils.loadTexture('imgCw3/planetTextures/earth.jpg') }),
+                positionX: 0,
+                positionZ: 300,
+                rotation: 0.002,
+                orbitRotation: 0.02,
+                name: "Earth",
+            });
+            obj_tab.push({
+                geometry: new THREE.SphereGeometry(25, 32, 32),
+                material: new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: THREE.ImageUtils.loadTexture('imgCw3/planetTextures/mars.jpg') }),
+                positionX: 0,
+                positionZ: 450,
+                rotation: 0.0015,
+                orbitRotation: 0.015,
+                name: "Mars",
+            });
+            obj_tab.push({
+                geometry: new THREE.SphereGeometry(60, 32, 32),
+                material: new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: THREE.ImageUtils.loadTexture('imgCw3/planetTextures/jupiter.jpg') }),
+                positionX: 0,
+                positionZ: 600,
+                rotation: 0.001,
+                orbitRotation: 0.002,
+                name: "Jupiter",
+            });
+            obj_tab.push({
+                geometry: new THREE.SphereGeometry(50, 32, 32),
+                material: new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: THREE.ImageUtils.loadTexture('imgCw3/planetTextures/saturn.jpg') }),
+                positionX: 0,
+                positionZ: 850,
+                rotation: 0.05,
+                orbitRotation: 0.008,
+                name: "Saturn",
+            });
+            obj_tab.push({
+                geometry: new THREE.SphereGeometry(40, 32, 32),
+                material: new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: THREE.ImageUtils.loadTexture('imgCw3/planetTextures/uran.jpg') }),
+                positionX: 0,
+                positionZ: 1050,
+                rotation: 0.0005,
+                orbitRotation: 0.006,
+                name: "Uranus",
+            });
+            obj_tab.push({
+                geometry: new THREE.SphereGeometry(35, 32, 32),
+                material: new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: THREE.ImageUtils.loadTexture('imgCw3/planetTextures/neptune.jpg') }),
+                positionX: 0,
+                positionZ: 1150,
+                rotation: 0.0002,
+                orbitRotation: 0.019,
+                name: "Neptune",
+            });            
+            obj_tab.push({
+                geometry: new THREE.SphereGeometry(5000,5000, 32),
+                material: new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: THREE.ImageUtils.loadTexture('imgCw3/space1.jpg') }),
+                positionX: 0,
+                positionZ: 0,
+                rotation: 0,
+                orbitRotation: 0,
+            });
+            
+            var orbita = [];//new THREE.Object3D();
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(
+                45, // kąt patrzenia kamery (FOV - field of view)
+                4 / 3, // proporcje widoku
+                0.1, // min renderowana odległość
+                10000 // max renderowana odległość
+                );
+            var renderer = new THREE.WebGLRenderer();
+            renderer.setClearColor(0xffffff);
+            renderer.setSize($("#scena").width()*0.8, $("#scena").height());
+            
+            var sphere_tab = [];
+
+            for (var i = 0; i < obj_tab.length; i++) {
+                var sphere = new THREE.Mesh(obj_tab[i].geometry, obj_tab[i].material);
+                sphere.position.set(obj_tab[i].positionX, 0, obj_tab[i].positionZ);
+                sphere_tab.push(sphere);
+                orbita[i] = new THREE.Object3D();
+                orbita[i].add(sphere);
+            }            
+            for (var i = 0; i < orbita.length; i++)
+                scene.add(orbita[i]);
+            //add orbits line
+            
+            var segmentCount = 40;
+            for (var j = 1 ; j < obj_tab.length - 1 ; j++) {
+                var OrbitLine = new THREE.Geometry();
+                var OLineMaterial = new THREE.LineBasicMaterial({ color: 0xFFFFFF });
+                for (var i = 0 ; i <= segmentCount; i++) {
+                    var theta = i / segmentCount * Math.PI * 2;
+                    OrbitLine.vertices.push(new THREE.Vector3(Math.cos(theta) * obj_tab[j].positionZ, 0, Math.sin(theta) * obj_tab[j].positionZ));
+                    var line = new THREE.Line(OrbitLine, OLineMaterial);
+                    scene.add(line);
+                }
+                segmentCount += 10;
+            }
+            //end orbits line
+            var x, y, z;
+            x = 0;
+            y = 0;
+            z = 0;
+
+            var geoRing = new THREE.RingGeometry(80, 60, 30);
+            var materialRing = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: THREE.ImageUtils.loadTexture('imgCw3/planetTextures/saturn.jpg') });
+            geoRing.vertices.push(new THREE.Vector3(-200, 0, -200));
+            geoRing.verticesNeedUpdate = true;
+            //pierscien saturna
+            var Ringo = new THREE.Mesh(geoRing, materialRing);
+            Ringo.position.x = 0;
+            Ringo.position.z = 850;
+            Ringo.rotation.x = Math.PI / 3;
+            orbita[10] = new THREE.Object3D();
+            orbita[10].add(Ringo);
+            scene.add(orbita[10]);
+
+            document.getElementById("scena").appendChild(renderer.domElement);
+            camera.position.x = 200;
+            camera.position.y = 200;
+            camera.position.z = 1400;
+            camera.lookAt(new THREE.Vector3(0, 0, 0));
+            //console.log("cp X: " + camera.position.x + " cp Y: " + camera.position.y + " cp Z: " + camera.position.z);
+            animateScene();
+
+            document.addEventListener("keydown", onKeyDown, false); // naciśnięcie dowolnego klawisza
+            document.addEventListener("keyup", onKeyUp, false); //zwolnienie dowolnego klawisza
+            var upArrow, downArrow, leftArrow, rightArrow;
+            upArrow = false;
+            downArrow = false;
+            leftArrow = false;
+            rightArrow = false;
+            var zoomIn = false;
+            var zoomOut = false;
+
+            function onKeyDown(event) {
+
+                var keyCode = event.which; // kod klawisza
+
+                //console.log(keyCode);
+                switch (keyCode) {
+                    case 38:
+                        upArrow = true;
+                        break;
+                    case 40:
+                        downArrow = true;
+                        break;
+                    case 37:
+                        leftArrow = true;
+                        break;
+                    case 39:
+                        rightArrow = true;
+                        break;
+                    case 221:
+                        zoomIn = true;
+                        break;
+                    case 219:
+                        zoomOut = true;
+                        break;
+                }
+            }
+            //stan klawiszy obslugi zdarzen
+            function onKeyUp(event) {
+                upArrow = false;
+                downArrow = false;
+                zoomIn = false;
+                zoomOut = false;
+                leftArrow = false;
+                rightArrow = false;
+            }
+            //obsluga menu
+            var actualPlanet = "";
+            $("li").click(function () {
+                actualPlanet = $(this).text();
+
+            });            
+            function animateScene() {
+                var a = camera.position.x,
+                    b = camera.position.y,
+                    c = camera.position.z;
+                if (upArrow == true)
+                    camera.position.y += 5;
+                if (downArrow == true)
+                    camera.position.y -= 5;
+                if (zoomIn == true) 
+                    camera.position.z -= 10;                                    
+                if (zoomOut == true)
+                    camera.position.z += 10;
+                if (leftArrow == true) {
+                    camera.position.x = a * Math.cos(0.05) - c * Math.sin(0.05);
+                    camera.position.z = c * Math.cos(0.05) + a * Math.sin(0.05);
+                }
+                if (rightArrow == true) {
+                    camera.position.x = a * Math.cos(0.05) + c * Math.sin(0.05);
+                    camera.position.z = c * Math.cos(0.05) - a * Math.sin(0.05);
+                }
+                
+                            
+                
+                for (var i = 0; i < obj_tab.length; i++){
+                    sphere_tab[i].rotation.y += obj_tab[i].rotation;
+                }
+                for (var i = 0; i < orbita.length; i++) {
+                    if (i < 10)
+                        orbita[i].rotation.y += obj_tab[i].orbitRotation;
+                    else orbita[i].rotation.y += obj_tab[6].orbitRotation;
+                }
+                for (var i = 0; i < obj_tab.length; i++) {
+                    if (obj_tab[i].name == actualPlanet) {
+                        var objPosition = new THREE.Vector3();
+                        //camera.lookAt(sphere_tab[i].position);
+                        objPosition.setFromMatrixPosition(sphere_tab[i].matrixWorld);
+                        camera.lookAt(objPosition);
+                        if (i > 0) {
+                            camera.position.x = objPosition.x - 200;
+                            camera.position.z = objPosition.z - 10;
+                        }
+                        console.log(objPosition.x,objPosition.y);
+                        break;//bez tego nie zmieni sie pozycja kamery
+                    }
+                    else
+                        camera.lookAt(new THREE.Vector3(0, 0, 0));
+                }
+                camera.updateProjectionMatrix();
+                requestAnimationFrame(animateScene);
+                renderer.render(scene, camera);
+            }
+        }
+        /*
+        for (var i = 0; i < obj_tab.length; i++) {
+                    sphere_tab[i].rotation.y += obj_tab[i].rotation;
+                    if (i > 0) {
+                        var speed = obj_tab[i].orbitRotation;
+                        var mesh = sphere_tab[i];
+                        var x = mesh.position.x;
+                        var z = mesh.position.z;
+                        mesh.position.x = x * Math.cos(speed) + z * Math.sin(speed);
+                        mesh.position.z = z * Math.cos(speed) + x * Math.sin(speed);
+                    }
+                    if (actualPlanet == obj_tab[i].name)
+                        camera.lookAt(sphere_tab[i].position);
+                }
+                */
+    </script>
+
+</head>
+<body>
+    <div id="scena"></div>
+    <div id="menu">
+        <ul id="planetList">
+            <li>Sun</li>
+            <li>Mercury</li>
+            <li>Venus</li>
+            <li>Earth</li>
+            <li>Mars</li>
+            <li>Jupiter</li>
+            <li>Saturn</li>
+            <li>Uranus</li>
+            <li>Neptune</li>
+        </ul>
+        <ul>
+            <li>Controls: arrows and '[',']'</li>
+        </ul>
+    </div>
+</body>
+</html>
